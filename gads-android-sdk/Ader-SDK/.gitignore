@@ -1,0 +1,9 @@
+build/
+bin-debug/
+bin-release-temp/
+bin/
+*.pbxuser
+*.mode1v3
+test-reports/*
+.DS_Store
+./.DS_Store

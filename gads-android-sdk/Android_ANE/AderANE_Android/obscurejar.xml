@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PackgeSDK" default="finaljar"  basedir=".">
+    <property name="password" value="123456"/>
+    
+    <!-- environment of the system -->
+    <property environment="env"/>
+    <!-- current time -->
+    <tstamp>
+        <format property="today" pattern="yyMMdd_hhmmss"/>
+    </tstamp>
+    <property name="dir.android_home" value="/Developer/Android/android-sdks"/>
+    <property name="dir.java_home" value="${java.home}"/><!-- java.home 为系统自带的变量，由ant获得 -->
+    <property name="dir.proguard_jar" value="/Developer/proguard4.6/lib/proguard.jar" />
+  	<!-- 设置android SDK和jar系统文件的位置 -->
+    
+    <!-- relative dir of android sdk -->
+    <property name="dir.tools" value="${dir.android_home}/tools"/>
+    <property name="dir.platform" value="${dir.android_home}/platforms/android-7"/>
+    <property name="dir.platform_tools" value="${dir.android_home}/platform-tools"/>
+    <property name="lib.android" value="${dir.platform}/android.jar"/>
+    <property name="android.framework" value="${dir.platform}/framework.aidl"/>
+	
+	<property name="SDK_Temp_Jar" value="SDK_Temp_Jar.jar"/>
+    <!-- command tools in android sdk -->
+    <property name="aapt" value="${dir.platform_tools}/aapt"/>
+    <property name="aidl" value="${dir.platform_tools}/aidl"/>
+    <property name="adb" value="${dir.platform_tools}/adb"/>
+    <property name="zipalign" value="${dir.tools}/zipalign"/>
+    <condition property="dx" value="${dir.platform_tools}/dx.bat" else="${dir.platform_tools}/dx">
+        <os family="windows" />
+    </condition>
+    <condition property="apk-builder" value="${dir.tools}/apkbuilder.bat" else="${dir.tools}/apkbuilder">
+        <os family="windows" />
+    </condition>
+    <condition property="jarsigner" value="${dir.java_home}/bin/jarsigner.exe" else="${dir.java_home}/bin/jarsigner">
+        <os family="windows" />
+    </condition>
+    
+    <!-- relative dir of our project -->
+    <property name="dir.packagedir" value="${basedir}/packagedir"/>
+    <property name="dir.src" value="${basedir}/src"/>
+    <property name="dir.assets" value="${basedir}/assets"/>
+    <property name="dir.res" value="${basedir}/res"/>
+    <property name="dir.gen" value="${basedir}/gen"/>
+    <property name="file.manifest" value="${basedir}/AndroidManifest.xml"/>
+    <property name="external-jars" value="${basedir}/libs"/>
+    <property name="injar" value="${dir.packagedir}/${SDK_Temp_Jar}"/>
+    <property name="outjar" value="${basedir}/RRGAderANE.jar"/>
+    
+    <!-- dex file name -->
+    
+    <!-- the output dir -->
+    <property name="dir.target" value="${basedir}/bin"/>
+    <property name="dir.target_classes" value="${dir.target}/classes"/>
+    <property name="dir.target_debug" value="${dir.target}/debug"/>
+    <property name="dir.target_release" value="${dir.target}/release"/>
+    
+    <target name="clean" >
+        <delete dir="${dir.packagedir}"/>
+        <delete dir="${dir.target}"/>
+        <delete dir="${dir.target_classes}"/>
+        <delete dir="${dir.target_debug}"/>
+        <delete dir="${dir.target_release}"/>
+    </target>
+    
+    <!-- init -->
+    <target name="init" depends="clean" >
+        <mkdir dir="${dir.packagedir}"/>
+        <mkdir dir="${dir.target}"/>
+        <mkdir dir="${dir.target_classes}"/>
+        <mkdir dir="${dir.target_debug}"/>
+        <mkdir dir="${dir.target_release}"/>
+    </target>
+    
+    <!-- generate apk file for the project -->
+    <target name="compile" depends="init" >
+        <!-- Generate the R.java file for this project's resources. -->
+        <exec executable="${aapt}" failonerror="true">
+            <arg value="package" />
+            <arg value="-m" />
+            <arg value="-J" />
+            <arg value="${dir.gen}" />
+            <arg value="-M" />
+            <arg value="${file.manifest}" />
+            <arg value="-S" />
+            <arg value="${dir.res}" />
+            <arg value="-I" />
+            <arg value="${lib.android}" />
+        </exec>
+        
+        <!-- Generate java classes from .aidl files. -->
+        <apply executable="${aidl}" failonerror="true">
+            <arg value="-p${android.framework}" />
+            <arg value="-I${dir.src}" />
+            <fileset dir="${dir.src}">
+                <include name="**/*.aidl" />
+            </fileset>
+        </apply>
+        <!-- Compile this project's .java files into .class files. -->
+        <javac encoding="UTF-8" target="1.6" debug="false" extdirs="" srcdir="${dir.src}" destdir="${dir.target_classes}" bootclasspath="${lib.android}" includeantruntime="on">
+            <classpath>
+                <fileset dir="${external-jars}" includes="*.jar" />
+            </classpath>
+        </javac>
+    </target>
+    <!--将编译后的class文件打包-->
+    <target name="build" depends="compile" >
+        <echo>build -- </echo>
+        <jar jarfile="${injar}" basedir="${dir.target_classes}"/>
+    </target>
+    
+    <!-- 最后jar包-->
+    <target name="finaljar" depends="build" >
+        
+        <unzip src="${injar}"  dest="${dir.packagedir}/class" />
+        <!--解压AderSDK.jar-->
+        <unzip src="${basedir}/libs/AderSDK.jar"  dest="${dir.packagedir}/class" />
+        
+        <delete dir="${dir.packagedir}/class/META-INF"/>  <!--删除编译生成的多余的META-INF文件，以免进行多余的混淆  -->
+        
+        <delete dir="${injar}"/>
+        
+        <zip basedir="${dir.packagedir}/class" destfile="${outjar}"/>
+        
+        <!--最后清理文件-->
+        <antcall target="clean"/>
+        
+    </target>
+    
+</project>

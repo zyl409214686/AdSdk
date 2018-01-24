@@ -1,0 +1,20 @@
+<extension xmlns="http://ns.adobe.com/air/extension/3.1">
+    <id>com.renren.ader</id>
+    <versionNumber>1.0.5</versionNumber>
+    <platforms>
+         <platform name="Android-ARM">
+            <applicationDeployment>
+                 <nativeLibrary>RRGAderANE.jar</nativeLibrary>
+                 <initializer>com.renren.ader.ane.RRGAderExtension</initializer>
+            </applicationDeployment>
+        </platform>
+        <platform name="iPhone-ARM">
+            <applicationDeployment>
+            </applicationDeployment>
+        </platform>
+        <platform name="default">
+            <applicationDeployment>
+            </applicationDeployment>
+        </platform>
+    </platforms>
+</extension>

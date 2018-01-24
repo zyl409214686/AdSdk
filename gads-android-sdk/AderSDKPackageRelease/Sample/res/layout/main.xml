@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    
+    <Button
+        android:id="@+id/initInterstitial"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="100dip"
+        android:layout_marginTop="100dip"
+        android:text="初始化插屏" />
+
+    <Button
+        android:id="@+id/btnLoadInterstitial"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/initInterstitial"
+        android:layout_marginLeft="100dip"
+        android:layout_marginTop="30dip"
+        android:text="请求插屏" />
+    
+</LinearLayout>

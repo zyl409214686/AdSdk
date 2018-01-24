@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   applicationDPI="160" backgroundColor="#445566" fontFamily="_sans">
+	<fx:Script>
+		<![CDATA[
+			import com.renren.ader.RRGAderAS;
+			
+			import mx.events.FlexEvent;
+			private var _pos:int=0;
+			
+			/**
+			 * start ad service
+			 */
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				//添加广告视图
+				var _devicetype:String=RRGAderAS.instance.getDeviceType();
+				tv.text="device type:"+_devicetype;
+				if(_devicetype.lastIndexOf("iPhone")!=-1||_devicetype.lastIndexOf("iPod")!=-1)
+				{
+					//iphone ipod
+					RRGAderAS.instance.startAder("18c4bae606274027805d1b9064189161",0,0,320,50,1);
+				}
+				else if(_devicetype.lastIndexOf("iPad")!=-1)
+				{
+					//ipad
+					RRGAderAS.instance.startAder("d362f1f01cf64f6a952c07fc3c74ddf4",0,0,728,90,1);
+				}
+				else
+				{
+					//android device
+					RRGAderAS.instance.startAder("815028da298e49869acb37849abf2c15",0,0,320,50,1);
+				}
+				//添加广告事件监听
+				/**
+				 * 获取广告成功
+				 * RRGAderAS.RRG_ADER_SUCCESS_EVENT
+				 * 
+				 * SDK返回的错误
+				 * RRGAderAS.RRG_ADER_FAIL_EVENT
+				 * 
+				 * 将要弹出新的视图，如进入短信、邮箱界面时
+				 * RRGAderAS.RRG_ADER_WILL_PRESENT_VIEWCONTROLLER_EVENT
+				 * 
+				 * 隐藏弹出的视图
+				 * RRGAderAS.RRG_ADER_DID_DISMISS_VIEWCONTROLLER_EVENT
+				 * */
+				RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_SUCCESS_EVENT,onReceiveEvent);
+				RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_FAIL_EVENT,onReceiveEvent);
+				RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_WILL_PRESENT_VIEWCONTROLLER_EVENT,onReceiveEvent);
+				RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_DID_DISMISS_VIEWCONTROLLER_EVENT,onReceiveEvent);
+			}
+			
+			/**
+			 * move ad view position
+			 */
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				//移动广告位置
+				if(_pos.valueOf()==0)
+				{
+					_pos=1;
+					var _devicetype:String=RRGAderAS.instance.getDeviceType();
+					if(_devicetype.lastIndexOf("iPhone")!=-1||_devicetype.lastIndexOf("iPod")!=-1)
+					{
+						//iphone ipod
+						RRGAderAS.instance.moveAder(0,410);
+					}
+					else if(_devicetype.lastIndexOf("iPad")!=-1)
+					{
+						//ipad
+						RRGAderAS.instance.moveAder(0,500);
+					}
+					else
+					{
+						//android device
+						RRGAderAS.instance.moveAder(0,10000);
+					}
+				}
+				else
+				{
+					_pos=0;
+					RRGAderAS.instance.moveAder(0,0);
+				}
+				//stage.addEventListener(StageOrientationEvent.ORIENTATION_CHANGING,onChangingOrientation,true,99);
+			}
+			/*
+			private function onChangingOrientation(event:StageOrientationEvent):void{
+			tv.text="onChangingOrientation";
+			}
+			*/
+			/**
+			 * stop ad service
+			 */
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				//先删除广告事件监听
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_SUCCESS_EVENT,onReceiveEvent);
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_FAIL_EVENT,onReceiveEvent);
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_WILL_PRESENT_VIEWCONTROLLER_EVENT,onReceiveEvent);
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_DID_DISMISS_VIEWCONTROLLER_EVENT,onReceiveEvent);
+				//再停止广告
+				RRGAderAS.instance.stopAder();
+			}
+			
+			protected function onReceiveEvent(event:DataEvent):void{
+				var ecode:String=event.type;
+				var args:Array;
+				/**Banner广告相关回调*/
+				if(ecode==RRGAderAS.RRG_ADER_SUCCESS_EVENT)
+				{
+					tv.text +="\nsuccess get ad count:"+event.data;
+				}
+				else if(ecode==RRGAderAS.RRG_ADER_FAIL_EVENT)
+				{
+					args=event.data.split("#");
+					tv.text +="\nfailed with code:"+args[0]+" and description:"+args[1];
+					this.button3_clickHandler(null);
+					this.button1_clickHandler(null);
+				}
+				else if(ecode==RRGAderAS.RRG_ADER_WILL_PRESENT_VIEWCONTROLLER_EVENT)
+				{
+					tv.text +="\nRRG_ADER_WILL_PRESENT_VIEWCONTROLLER_EVENT";
+				}
+				else if(ecode==RRGAderAS.RRG_ADER_DID_DISMISS_VIEWCONTROLLER_EVENT)
+				{
+					tv.text +="\nRRG_ADER_DID_DISMISS_VIEWCONTROLLER_EVENT";
+				}
+				/**插屏广告相关回调*/
+				else if(ecode==RRGAderAS.RRG_ADER_INTERSTITIAL_DID_RECEIVE_AD_EVENT)
+				{
+					//成功获取广告后，可以立即显示插屏广告，或等到合适的时候显示广告
+					showInterstitialAd(null);
+				}
+				else if(ecode==RRGAderAS.RRG_ADER_INTERSTITIAL_FAIL_EVENT)
+				{
+					//请求出现异常
+					args=event.data.split("#");
+					tv.text +="\nRRG_ADER_INTERSTITIAL_FAIL_EVENT failed with code:"+args[0]+" and description:"+args[1];
+				}
+				else if(ecode==RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_PRESENT_EVENT)
+				{
+					//将要显示插屏广告
+					tv.text +="\nRRG_ADER_INTERSTITIAL_WILL_PRESENT_EVENT";
+				}
+				else if(ecode==RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_DISMISS_EVENT)
+				{
+					//将要移除插屏广告
+					tv.text +="\nRRG_ADER_INTERSTITIAL_WILL_DISMISS_EVENT";
+				}
+				else if(ecode==RRGAderAS.RRG_ADER_INTERSTITIAL_DID_DISMISS_EVENT)
+				{
+					//插屏广告已被移除
+					tv.text +="\nRRG_ADER_INTERSTITIAL_DID_DISMISS_EVENT"+"#"+stage.orientation;
+				}
+			}
+			
+			//插屏广告事件说明
+			/**
+			 * 插屏广告请求成功，可以显示
+			 * RRGAderAS.RRG_ADER_INTERSTITIAL_DID_RECEIVE_AD_EVENT
+			 * 
+			 * 插屏广告请求发生异常
+			 * RRGAderAS.RRG_ADER_INTERSTITIAL_FAIL_EVENT
+			 * 
+			 * 将要显示插屏广告
+			 * RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_PRESENT_EVENT
+			 * 
+			 * 将要移除插屏广告
+			 * RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_DISMISS_EVENT
+			 * 
+			 * 插屏广告已被移除
+			 * RRGAderAS.RRG_ADER_INTERSTITIAL_DID_DISMISS_EVENT
+			 * */
+			
+			
+			/**
+			 * 插屏广告初始化
+			 * */
+			protected function button4_clickHandler(event:MouseEvent):void
+			{
+				//先移除事件监听
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_DID_RECEIVE_AD_EVENT,onReceiveEvent);
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_FAIL_EVENT,onReceiveEvent);
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_PRESENT_EVENT,onReceiveEvent);
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_DISMISS_EVENT,onReceiveEvent);
+				RRGAderAS.instance.removeEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_DID_DISMISS_EVENT,onReceiveEvent);
+				var _devicetype:String=RRGAderAS.instance.getDeviceType();
+				if(_devicetype.lastIndexOf("iPhone")!=-1||_devicetype.lastIndexOf("iPod")!=-1)
+				{
+					//iphone ipod
+					RRGAderAS.instance.initInterstitialAd("d362f1f01cf64f6a952c07fc3c74ddf4",RRGAderAS.ADER_INTERSTITIALAD_SIZE_100,0,false);
+				}
+				else if(_devicetype.lastIndexOf("iPad")!=-1)
+				{
+					//ipad
+					RRGAderAS.instance.initInterstitialAd("d362f1f01cf64f6a952c07fc3c74ddf4",RRGAderAS.ADER_INTERSTITIALAD_SIZE_100,0,false);
+				}
+				else
+				{
+					//android device
+					RRGAderAS.instance.initInterstitialAd("815028da298e49869acb37849abf2c15",RRGAderAS.ADER_INTERSTITIALAD_SIZE_100,0,false);
+				}
+			}
+			
+			/**
+			 * 请求插屏广告
+			 * */
+			protected function button5_clickHandler(event:MouseEvent):void
+			{
+				//添加请求成功失败事件监听
+				RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_DID_RECEIVE_AD_EVENT,onReceiveEvent);
+				RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_FAIL_EVENT,onReceiveEvent);
+				
+				RRGAderAS.instance.requestInterstitialAd();
+			}
+			
+			/**
+			 * 显示插屏广告
+			 * */
+			protected function showInterstitialAd(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				//先判断插屏广告是否准备就绪
+				if(RRGAderAS.instance.isInterstitialAdReady())
+				{
+					//添加广告显示相关事件监听
+					RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_PRESENT_EVENT,onReceiveEvent);
+					RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_WILL_DISMISS_EVENT,onReceiveEvent);
+					RRGAderAS.instance.addEventListener(RRGAderAS.RRG_ADER_INTERSTITIAL_DID_DISMISS_EVENT,onReceiveEvent);
+					
+					RRGAderAS.instance.presentInterstitialAd();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 <fx:Number id="_pos">0</fx:Number>-->
+	</fx:Declarations>
+	<s:TextArea id="tv" left="25" top="14" right="25" height="59"/>
+	
+	<s:Label left="25" top="92" text="Banner广告相关"/>
+	<s:Button left="25" top="122" width="120" label="启动广告" click="button1_clickHandler(event)"/>
+	<s:Button width="120" top="122" right="25" label="移动广告" click="button2_clickHandler(event)"/>
+	<s:Button left="25" top="177" width="120" label="停止广告" click="button3_clickHandler(event)" />
+	
+	<s:Label left="25" top="236" text="插屏广告相关"/>
+	<s:Button left="25"  top="267" width="120" label="初始化广告" click="button4_clickHandler(event)"/>
+	<s:Button width="120" top="267" right="25" label="请求广告" click="button5_clickHandler(event)"/>
+</s:Application>

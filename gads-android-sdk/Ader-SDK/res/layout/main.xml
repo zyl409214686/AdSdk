@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sdkview"
+        android:layout_marginLeft="3dip"
+        android:layout_marginRight="3dip"
+        android:layout_marginTop="-11dip"
+        android:paddingLeft="5dip" >
+    </RelativeLayout>
+    <!-- 添加自定义控件，adview 
+
+    <com.rrgame.sdk.HASDKView
+        android:id="@+id/sdkview"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffffff" />
+	
+    
+
+    <Button
+        android:id="@+id/service_stop"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/service_start"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="33dp"
+        android:text="停止Banner" />
+
+    <Button
+        android:id="@+id/service_start"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/service_stop"
+        android:layout_alignLeft="@+id/testmode"
+        android:layout_marginBottom="14dp"
+        android:text="开始Banner" />
+    
+    <EditText
+        android:id="@+id/editBannerWidth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/editBannerHeight"
+        android:layout_alignLeft="@+id/editBannerHeight"
+        android:layout_marginBottom="16dp"
+        android:ems="10"
+        android:hint="Banner广告的宽"
+        android:inputType="number"
+        android:text="320" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/editBannerHeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/testmode"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="28dp"
+        android:ems="10"
+        android:hint="Banner广告的高"
+        android:inputType="number"
+        android:text="50" />
+
+-->
+    <Button
+        android:id="@+id/releasemode"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/testmode"
+        android:layout_alignBottom="@+id/testmode"
+        android:layout_alignRight="@+id/relativeLayout1"
+        android:layout_marginRight="35dp"
+        android:text="正式模式" />
+
+    <Button
+        android:id="@+id/testmode"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/relativeLayout1"
+        android:layout_marginBottom="22dp"
+        android:layout_marginLeft="33dp"
+        android:text="测试模式" />
+
+    <Button
+        android:id="@+id/initInterstitial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/testmode"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="26dp"
+        android:text="初始化插屏" />
+
+    <Button
+        android:id="@+id/btnLoadInterstitial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/initInterstitial"
+        android:layout_alignRight="@+id/initInterstitial"
+        android:layout_below="@+id/initInterstitial"
+        android:layout_marginTop="18dp"
+        android:text="请求插屏" />
+
+</RelativeLayout>

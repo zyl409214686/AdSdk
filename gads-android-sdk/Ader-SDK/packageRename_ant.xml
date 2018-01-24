@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- www.Ulrich-Scheller.de - use this script/project for whatever you want on your own risk -->
+
+<project name="PackgeName" default="change-package_name" basedir=".">
+    <property name="pkg.name" value="com.rrgame" />
+	<property name="replace.pkg.name" value="" />
+    <property name="srcdir" value="src" />
+    <!-- 替换包名 -->
+    <target name="change-package_name">
+	<echo>replace *.java package-name...${pkg.name}</echo>
+	<replaceregexp flags="g" 
+	    match="${pkg.name}"
+		replace="com.${replace.pkg.name}"
+	    byline="false" encoding="UTF-8">
+		<fileset dir="${basedir}/${srcdir}" includes="**/*.java" /> 
+	</replaceregexp>
+	<!-- 重命名目录 -->
+    <move file="src/com/rrgame" tofile="src/com/${replace.pkg.name}"/>
+	</target>
+	
+</project>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PackgeSDK" default="hasVersion"  basedir="."><!--  hasVersion -->
+    <property name="replace.pkg.name" value="" />
+    <property name="password" value="123456"/>
+
+    <!-- environment of the system -->
+<property environment="env"/>  
+    <!-- current time -->
+    <tstamp>
+            <format property="today" pattern="yyMMdd_hhmmss"/>
+    </tstamp>
+    <property name="dir.android_home" value="/Developer/Android/android-sdks"/>
+    <property name="dir.java_home" value="${java.home}"/><!-- java.home 为系统自带的变量，由ant获得 -->
+    <property name="dir.proguard_jar" value="/Developer/proguard4.6/lib/proguard.jar" />
+  	<!-- 设置android SDK和jar系统文件的位置 -->
+
+    <!-- relative dir of android sdk -->
+    <property name="dir.tools" value="${dir.android_home}/tools"/>
+    <property name="dir.platform" value="${dir.android_home}/platforms/android-4"/>
+    <property name="dir.platform_tools" value="${dir.android_home}/platform-tools"/>
+    <property name="lib.android" value="${dir.platform}/android.jar"/>
+    <property name="android.framework" value="${dir.platform}/framework.aidl"/>
+	<property name="lib" value="lib"/>
+	
+	<property name="AderSDKTemp_jar" value="AderSDKTemp.jar"/>
+    <!-- command tools in android sdk -->
+    <property name="aapt" value="${dir.platform_tools}/aapt"/>
+    <property name="aidl" value="${dir.platform_tools}/aidl"/>
+    <property name="adb" value="${dir.platform_tools}/adb"/>
+    <property name="zipalign" value="${dir.tools}/zipalign"/>
+    <condition property="dx" value="${dir.platform_tools}/dx.bat" else="${dir.platform_tools}/dx">
+            <os family="windows" />
+    </condition>
+    <condition property="apk-builder" value="${dir.tools}/apkbuilder.bat" else="${dir.tools}/apkbuilder">
+            <os family="windows" />
+    </condition>
+    <condition property="jarsigner" value="${dir.java_home}/bin/jarsigner.exe" else="${dir.java_home}/bin/jarsigner">
+        <os family="windows" />
+    </condition>
+
+    <!-- relative dir of our project -->
+    <property name="dir.libs" value="${basedir}/libs"/>
+    <property name="dir.src" value="${basedir}/src"/>
+    <property name="dir.assets" value="${basedir}/assets"/>
+    <property name="dir.res" value="${basedir}/res"/>
+    <property name="dir.gen" value="$basedir}/gen"/>
+    <property name="file.manifest" value="${basedir}/AndroidManifest.xml"/>
+    <property name="external-jars" value="${basedir}/libs"/>
+    <property name="injar" value="${lib}/${AderSDKTemp_jar}"/>
+    <property name="outjar" value="${lib}/AderSDK.jar"/>
+
+    <!-- dex file name -->
+    <property name="file.dex" value="classes.dex"/>
+    <property name="file.resource" value="resources.ap_"/>
+    <property name="file.activity" value="${basedir}/src/com/AderSDKActivity.java"/><!--activity文件  -->
+    <property name="file.R" value="${basedir}/src/com/${replace.pkg.name}/sdk/R.java"/><!--编译生成的多余的R文件  -->
+
+    <!-- the output dir -->
+    <property name="dir.target" value="${basedir}/bin"/>
+    <property name="dir.target_classes" value="${dir.target}/classes"/>
+    <property name="dir.target_dex" value="${dir.target}/${file.dex}"/>
+    <property name="dir.target_resource" value="${dir.target}/${file.resource}"/>
+    <property name="dir.target_debug" value="${dir.target}/debug"/>
+    <property name="dir.target_release" value="${dir.target}/release"/>
+    <property name="file.apk_debug" value="${dir.target_debug}/${ant.project.name}_${today}.apk"/>
+    <property name="file.apk_unsign_release" value="${dir.target_release}/${ant.project.name}_unsign_${today}.apk"/>
+    <property name="file.apk_release" value="${dir.target_release}/${ant.project.name}_unoptimized_${today}.apk"/>
+    <!-- the signed release which use zipalign tool to optimized -->
+    <property name="file.apk_zipalign" value="${dir.target_release}/${ant.project.name}_${today}.apk"/>
+
+    <target name="hasVersion">   
+        <condition property="scondition">   
+            <!--如果属性version不存在则返回false-->   
+            <isset property="version" />   
+        </condition>   
+        <antcall target="haveVersion">    
+        </antcall>   
+        <antcall target="noVersion">   
+        </antcall>   
+    </target>   
+    <target name="haveVersion" if="scondition"> 
+        <echo message="已经输入版本号：${version}"/> 
+         <antcall target="proguard">    
+        </antcall>     
+    </target>   
+    <target name="noVersion" unless="scondition">  
+        <echo>没有输入版本号</echo>   
+    </target>
+    
+    <target name="clean" >
+        <delete dir="${dir.libs}"/>
+        <delete dir="${dir.target}"/>
+        <delete dir="${dir.target_classes}"/>
+        <delete dir="${dir.target_debug}"/>
+        <delete dir="${dir.target_release}"/>
+    </target>
+    
+    <!-- init -->
+    <target name="init" depends="clean" >      
+        <mkdir dir="${dir.libs}"/>
+        <move file="${file.activity}" todir="${dir.libs}"/><!-- 移走不需要打进jar包的activity文件 -->
+        <mkdir dir="${dir.target}"/>
+        <mkdir dir="${dir.target_classes}"/>
+        <mkdir dir="${dir.target_debug}"/>
+        <mkdir dir="${dir.target_release}"/>
+    </target>
+    
+    <!-- generate apk file for the project -->
+    <target name="compile" depends="init" >
+            <!-- Generate the R.java file for this project's resources. -->
+            <exec executable="${aapt}" failonerror="true">
+            <arg value="package" />
+            <arg value="-m" />
+            <arg value="-J" />
+            <arg value="${dir.src}" />
+            <arg value="-M" />
+            <arg value="${file.manifest}" />
+            <arg value="-S" />
+            <arg value="${dir.res}" />
+            <arg value="-I" />
+            <arg value="${lib.android}" />
+        </exec>
+        <!-- Generate java classes from .aidl files. -->
+        <apply executable="${aidl}" failonerror="true">
+            <arg value="-p${android.framework}" />
+            <arg value="-I${dir.src}" />
+            <fileset dir="${dir.src}">
+                <include name="**/*.aidl" />
+            </fileset>
+        </apply>
+        <!-- Compile this project's .java files into .class files. -->        
+        <javac encoding="UTF-8" target="1.6" debug="false" extdirs="" srcdir="${dir.src}" destdir="${dir.target_classes}" bootclasspath="${lib.android}">
+            <classpath>
+                <fileset dir="${external-jars}" includes="*.jar" />
+            </classpath>
+        </javac>
+    </target>
+        <!--将编译后的class文件打包-->
+        <target name="build" depends="compile" >
+            <echo>build -- </echo>
+            <mkdir dir="${lib}"/>
+            <delete file="${dir.target_classes}/com/${replace.pkg.name}/sdk/R.class"/>
+            <jar jarfile="${injar}" basedir="${dir.target_classes}"/>
+        </target>
+	
+	 <!-- 混淆代码-->
+
+    <target name="proguard" depends="build" >
+
+        <delete file="${file.R}"/><!--删除编译生成的多余的R文件  -->
+        
+        <unzip src="${injar}"  dest="build/class" />
+        
+        <delete dir="build/class/META-INF"/>  <!--删除编译生成的多余的META-INF文件，以免进行多余的混淆  -->
+        <delete file="build/class/om/${replace.pkg.name}/sdk/R.class"/>
+        <delete dir="${injar}"/>
+        
+        <zip basedir="build/class" destfile="tt.jar"/>
+        
+        <delete dir="build/class"/>
+        
+        <java jar="${dir.proguard_jar}"  fork="true"  failonerror="true">
+
+             <jvmarg value="-Dmaximum.inlined.code.length=32" />
+
+             <arg value="-injars tt.jar"/>
+
+             <arg value="-outjars ${outjar}" />
+            
+			 <arg value="-libraryjars ${lib.android}" />
+			
+           	 <arg value="-libraryjars  ${dir.android_home}/tools/support/annotations.jar"/>
+            
+           	 <!-- 设置输入输出文件和引用jar包  -->
+
+			 <arg value="-dontshrink" /> 
+			 
+			 <arg value="-keeppackagenames"/>
+              
+             <arg value="-repackageclasses"/>
+             
+             <arg value="-flattenpackagehierarchy"/>
+             
+             <arg value="-keep public class com.${replace.pkg.name}.sdk.*{public *;}"/> 
+            
+             <arg value="-keep public class com.${replace.pkg.name}.sdk.download.AderDownloadItem{public *;}"/>
+            
+             <arg value="-keep public class com.${replace.pkg.name}.sdk.download.AderDownloadService{public *;}" />
+             
+             
+             <arg value="-target 1.6"/>
+             
+             <arg value="-verbose" />
+             
+             <arg value="-ignorewarning"/>
+			
+             <arg value="-dontskipnonpubliclibraryclassmembers" /> 
+            
+             <arg value="-dontskipnonpubliclibraryclasses "/>       
+             
+       </java>
+       
+       <delete file="${injar}"/>
+       
+       <delete file="tt.jar"/>
+       
+       <move file="${dir.libs}/AderSDKActivity.java" todir="${basedir}/src/com/"/><!-- 把activity文件移回原位 -->
+       
+       <delete dir="${dir.libs}"/>
+       
+       <delete dir="build"/>
+       
+	   <echo message="输入的版本号为: ${version}"/>
+	   
+	   <delete dir="../AderSDKPackageRelease/lib"/>
+	   
+	   <mkdir dir="../AderSDKPackageRelease/lib"/>
+	   
+	   <copy todir="../AderSDKPackageRelease/lib">
+	       
+	   <fileset dir="lib"/>
+		
+	   </copy>
+		
+	   <copy todir="../AderSDKPackageRelease/Sample/libs">
+	       
+	   <fileset dir="lib"/>
+		
+	   </copy>
+		
+	   <delete dir="${lib}"/>
+		
+	   <delete file="../AderSDKPackageRelease/.DS_Store"/>
+	   
+	   <mkdir dir="${user.home}/Desktop/ader-android-sdk-${version}"/>
+	   
+	   <copy todir="${user.home}/Desktop/ader-android-sdk-${version}">
+	       
+	   <fileset dir="../AderSDKPackageRelease"/>
+		
+	   </copy> 
+		
+	   <zip basedir="${user.home}/Desktop/ader-android-sdk-${version}" destfile="${user.home}/Desktop/ader-android-sdk-${version}.zip"/><!-- 放到桌面 -->
+       	
+       <delete dir="${user.home}/Desktop/ader-android-sdk-${version}"/> 
+       
+    </target>
+   
+</project>
